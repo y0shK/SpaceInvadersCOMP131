@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -31,6 +32,13 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private int frame = 0;
     private Person person1;
     private int x=200;
+    private int alienpos = 1;
+    private ArrayList<Alien> onScreen = new ArrayList<Alien>();
+    private int numRows = 0;
+    private int alienHt = 100;
+    private int alienWidth = 15;
+    private int speed = 5;
+    
     // FIXME list your game objects here
 
     /* Constructor for a Space Invaders game
@@ -40,12 +48,22 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         this.canvasWidth = 600;
         this.canvasHeight = 400;
         this.backgroundColor = Color.BLACK;
-        
         setPreferredSize(new Dimension(this.canvasWidth, this.canvasHeight));
         // set the drawing timer
         this.timer = new Timer(msPerFrame, this);
 
-        this.person1 = new Person(x, 200, 20, new Color(0,255,0));
+        this.person1 = new Person(x, this.canvasHeight-20, 20, new Color(0,255,0));
+        
+        while (numRows < 5) {
+        	while(alienpos + 15 <= canvasWidth-100) {
+            	onScreen.add(new Alien(alienpos, alienHt, alienWidth, new Color(0,0,255)));
+            	alienpos+=30;
+            }
+        	alienHt+=25;
+        	numRows++;
+        	alienpos = 1;
+        }
+        
 
     }
 
@@ -143,20 +161,21 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      */
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            x -= 10;
-        	//System.out.println("left");
+            x-=10;
+        	System.out.println("left");
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-        	x += 10;
-        	//System.out.println("right");
+        	x+=10;
+        	System.out.println("right");
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-        	//System.out.println("space");
+        	System.out.println("space");
         }
     }
 
     /* Update the game objects
      */
     private void update() {
-        this.person1 = new Person(x, 200, 20, new Color(0,255,0));
+        this.person1 = new Person(x, this.canvasHeight-20, 20, new Color(0,255,0));
+
     }
 
     /* Check if the player has lost the game
@@ -181,6 +200,27 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      */
     private void paintGameScreen(Graphics g) {
         person1.draw(g);
+
+        for(Alien a : onScreen) {
+        	if (a.x >= (600-this.alienWidth)) {
+        		speed = -5;
+        		for(Alien b : onScreen) {
+        			b.y +=5;
+        		}
+        	}
+        	else if (a.x <= 0){
+        		speed = 5;
+        		for(Alien b : onScreen) {
+        			b.y +=5;}
+        	}
+
+        	if (frame % 2 == 0) {
+        		a.x += speed;
+        	}
+
+        	a.draw(g);
+        }
+        
     }
 
     /* Paint the screen when the player has won
