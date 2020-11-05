@@ -1,5 +1,3 @@
-package proj2;
-
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -42,6 +40,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         this.canvasWidth = 600;
         this.canvasHeight = 400;
         this.backgroundColor = Color.BLACK;
+        
         setPreferredSize(new Dimension(this.canvasWidth, this.canvasHeight));
         // set the drawing timer
         this.timer = new Timer(msPerFrame, this);
@@ -144,13 +143,13 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      */
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            x-=10;
-        	System.out.println("left");
+            x -= 10;
+        	//System.out.println("left");
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-        	x+=10;
-        	System.out.println("right");
+        	x += 10;
+        	//System.out.println("right");
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-        	System.out.println("space");
+        	//System.out.println("space");
         }
     }
 
