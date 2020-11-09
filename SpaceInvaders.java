@@ -35,7 +35,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private int alienpos = 1;
     private ArrayList<Alien> onScreen = new ArrayList<Alien>();
     private int numRows = 0;
-    private int alienHt = 100;
+    private int alienHt = 50;
     private int alienWidth = 15;
     private int speed = 5;
     
@@ -61,7 +61,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
             }
         	alienHt+=25;
         	numRows++;
-        	alienpos = 1;
+        	alienpos = 0;
         }
         
 
@@ -191,7 +191,8 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @returns  true if the player has won, false otherwise
      */
     private boolean hasWonGame() {
-        return false; // FIXME delete this when ready
+        
+    	return false; // FIXME delete this when ready
     }
 
     /* Paint the screen during normal gameplay
@@ -206,15 +207,18 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         		speed = -5;
         		for(Alien b : onScreen) {
         			b.y +=5;
+        			b.x-=5;
         		}
         	}
         	else if (a.x <= 0){
         		speed = 5;
         		for(Alien b : onScreen) {
-        			b.y +=5;}
+        			b.y +=5;
+        			b.x+=5;
+        			}
         	}
 
-        	if (frame % 2 == 0) {
+        	if (frame % 15 == 0) {
         		a.x += speed;
         	}
 
@@ -228,7 +232,10 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @param g The Graphics for the JPanel
      */
     private void paintWinScreen(Graphics g) {
-        // FIXME draw the win screen here
+        char[] win = {'Y', 'o','u',' ', 'w','o', 'n', '!', '!'};
+        g.setColor(new Color(0,255,0));
+        g.setFont(new Font("ComicSans", Font.PLAIN, 50));
+        g.drawChars(win, 0, win.length, 200, 200);
     }
 
     /* Paint the screen when the player has lost
@@ -236,7 +243,10 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @param g The Graphics for the JPanel
      */
     private void paintLoseScreen(Graphics g) {
-        // FIXME draw the game over screen here
+        char[] lose = {'Y', 'o','u',' ', 'l','o', 's', 't', ' ', ':', '(', ' ', ':', '(', ' ', ':', '('};
+        g.setColor(new Color(0,255,0));
+        g.setFont(new Font("ComicSans", Font.PLAIN, 50));
+        g.drawChars(lose, 0, lose.length, 150, 200);
     }
 
     public static void main(String[] args) {
