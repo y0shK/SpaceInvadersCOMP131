@@ -41,8 +41,11 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
 
     // laser boolean flag
     private PlayerLaser newLaser;
-    boolean shootingLaser = false;
-    int laserSize;
+//    boolean shootingLaser = false;
+    private ArrayList<PlayerLaser> lasers= new ArrayList<PlayerLaser>();
+    int laserSize = 6;
+    int laserSpeed = 2;
+    private int framesSinceFire = 0;
 
     // alien variables
     private int alienHt = 50;
@@ -195,7 +198,13 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
             }
 
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            this.shootingLaser = true;
+            //this.shootingLaser = true;
+        	while (framesSinceFire > 20) {
+        		lasers.add(new PlayerLaser(personXCoordinate+(this.personSize/2)-(this.laserSize/2), this.canvasHeight-this.personSize, this.laserSize, new Color(255,0,0)));
+        		framesSinceFire = 0;
+        	}
+        	
+        	
         }
     }
 
@@ -203,6 +212,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      */
     private void update() {
         this.person1 = new Person(personXCoordinate, personYCoordinate, personSize, new Color(0,255,0));
+        framesSinceFire++;
 
     }
 
@@ -231,15 +241,15 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         person1.draw(g);
 
         // draw the laser
-        if (shootingLaser) {
-            this.laserSize = 10;
-            PlayerLaser newLaser = new PlayerLaser(personXCoordinate, personYCoordinate, laserSize, new Color(255, 0, 0));
-            //newLaser.speed_y += 5;
-            newLaser.draw(g);
+//        if (shootingLaser) {
+//            this.laserSize = 10;
+//            PlayerLaser newLaser = new PlayerLaser(personXCoordinate, personYCoordinate, laserSize, new Color(255, 0, 0));
+//            //newLaser.speed_y += 5;
+//            newLaser.draw(g);
 
             //newLaser.initiateLaserMovement();
 
-        }
+//        }
 
         // alien
 
@@ -265,6 +275,12 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
 
             a.draw(g);
         }
+        for (PlayerLaser l : lasers) {
+        	
+        	l.y -= laserSpeed;
+        	l.draw(g);
+        }
+
 
     }
 
