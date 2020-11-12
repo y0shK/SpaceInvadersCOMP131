@@ -22,6 +22,7 @@ import javax.swing.Timer;
 
 public class SpaceInvaders extends JPanel implements ActionListener, KeyListener, Runnable {
 
+    // JPanel variables - do not change
     private final int canvasWidth;
     private final int canvasHeight;
     private final Color backgroundColor;
@@ -30,15 +31,28 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private final int msPerFrame = 1000 / framesPerSecond;
     private Timer timer;
     private int frame = 0;
-    private Person person1;
-    private int x=200;
-    private int alienpos = 1;
-    private ArrayList<Alien> onScreen = new ArrayList<Alien>();
-    private int numRows = 0;
+
+    // player variables
+    private Person person1; // player
+    private int personXCoordinate; // 0
+    private int personYCoordinate; // this.canvasHeight - 20;
+
+    private int personSize = 20;
+
+    // laser boolean flag
+    private PlayerLaser newLaser;
+    boolean shootingLaser = false;
+    int laserSize;
+
+    // alien variables
     private int alienHt = 50;
     private int alienWidth = 15;
-    private int speed = 5;
-    
+    private int speed = 5; // alien speed
+
+    private int alienpos = 1; // initial position of the first alien
+    private ArrayList<Alien> onScreen = new ArrayList<Alien>(); // arrayList of all aliens
+    private int numRows = 0; // number of rows of all aliens - initialize at 0
+
     // FIXME list your game objects here
 
     /* Constructor for a Space Invaders game
@@ -49,21 +63,27 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         this.canvasHeight = 400;
         this.backgroundColor = Color.BLACK;
         setPreferredSize(new Dimension(this.canvasWidth, this.canvasHeight));
+
         // set the drawing timer
         this.timer = new Timer(msPerFrame, this);
 
-        this.person1 = new Person(x, this.canvasHeight-20, 20, new Color(0,255,0));
-        
+        // define person coordinates
+        this.personXCoordinate = 0;
+        this.personYCoordinate = this.canvasHeight - 20;
+
+        // instantiate the player
+        this.person1 = new Person(personXCoordinate, personYCoordinate, personSize, new Color(0,255,0));
+
         while (numRows < 5) {
-        	while(alienpos + 15 <= canvasWidth-100) {
-            	onScreen.add(new Alien(alienpos, alienHt, alienWidth, new Color(0,0,255)));
-            	alienpos+=30;
+            while(alienpos + 15 <= canvasWidth-100) {
+                onScreen.add(new Alien(alienpos, alienHt, alienWidth, new Color(0,0,255)));
+                alienpos+=30;
             }
-        	alienHt+=25;
-        	numRows++;
-        	alienpos = 0;
+            alienHt+=25;
+            numRows++;
+            alienpos = 0;
         }
-        
+
 
     }
 
@@ -136,7 +156,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     /* Respond to key release events
      *
      * A key release is when you let go of a key
-     * 
+     *
      * @param e  An object describing what key was released
      */
     public void keyReleased(KeyEvent e) {
@@ -146,7 +166,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     /* Respond to key type events
      *
      * A key type is when you press then let go of a key
-     * 
+     *
      * @param e  An object describing what key was typed
      */
     public void keyTyped(KeyEvent e) {
@@ -156,30 +176,38 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     /* Respond to key press events
      *
      * A key type is when you press then let go of a key
-     * 
+     *
      * @param e  An object describing what key was typed
      */
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            x-=10;
-        	System.out.println("left");
+            if (personXCoordinate > 0) {
+                personXCoordinate -= 10;
+            }
+
+
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-        	x+=10;
-        	System.out.println("right");
+            // player
+
+            //System.out.println(personXCoordinate);
+            if (personXCoordinate < 600 - personSize) {
+                personXCoordinate += 10;
+            }
+
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-        	System.out.println("space");
+            this.shootingLaser = true;
         }
     }
 
     /* Update the game objects
      */
     private void update() {
-        this.person1 = new Person(x, this.canvasHeight-20, 20, new Color(0,255,0));
+        this.person1 = new Person(personXCoordinate, personYCoordinate, personSize, new Color(0,255,0));
 
     }
 
     /* Check if the player has lost the game
-     * 
+     *
      * @returns  true if the player has lost, false otherwise
      */
     private boolean hasLostGame() {
@@ -187,12 +215,12 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     }
 
     /* Check if the player has won the game
-     * 
+     *
      * @returns  true if the player has won, false otherwise
      */
     private boolean hasWonGame() {
-        
-    	return false; // FIXME delete this when ready
+
+        return false; // FIXME delete this when ready
     }
 
     /* Paint the screen during normal gameplay
@@ -202,29 +230,42 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private void paintGameScreen(Graphics g) {
         person1.draw(g);
 
-        for(Alien a : onScreen) {
-        	if (a.x >= (600-this.alienWidth)) {
-        		speed = -5;
-        		for(Alien b : onScreen) {
-        			b.y +=5;
-        			b.x-=5;
-        		}
-        	}
-        	else if (a.x <= 0){
-        		speed = 5;
-        		for(Alien b : onScreen) {
-        			b.y +=5;
-        			b.x+=5;
-        			}
-        	}
+        // draw the laser
+        if (shootingLaser) {
+            this.laserSize = 10;
+            PlayerLaser newLaser = new PlayerLaser(personXCoordinate, personYCoordinate, laserSize, new Color(255, 0, 0));
+            //newLaser.speed_y += 5;
+            newLaser.draw(g);
 
-        	if (frame % 15 == 0) {
-        		a.x += speed;
-        	}
+            //newLaser.initiateLaserMovement();
 
-        	a.draw(g);
         }
-        
+
+        // alien
+
+        for(Alien a : onScreen) {
+            if (a.x >= (600-this.alienWidth)) {
+                speed = -5;
+                for(Alien b : onScreen) {
+                    b.y +=5;
+                    b.x-=5;
+                }
+            }
+            else if (a.x <= 0){
+                speed = 5;
+                for(Alien b : onScreen) {
+                    b.y +=5;
+                    b.x+=5;
+                }
+            }
+
+            if (frame % 5 == 0) {
+                a.x += speed;
+            }
+
+            a.draw(g);
+        }
+
     }
 
     /* Paint the screen when the player has won
