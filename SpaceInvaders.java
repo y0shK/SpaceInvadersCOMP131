@@ -40,9 +40,9 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private int personSize = 20;
 
     // laser boolean flag
-    private PlayerLaser newLaser;
 //    boolean shootingLaser = false;
     private ArrayList<PlayerLaser> lasers= new ArrayList<PlayerLaser>();
+    private ArrayList<AlienLaser> alienLasers= new ArrayList<AlienLaser>();
     int laserSize = 6;
     int laserSpeed = 2;
     private int framesSinceFire = 0;
@@ -51,6 +51,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private int alienHt = 50;
     private int alienWidth = 15;
     private int speed = 5; // alien speed
+    private int alienLaserSize = 10;
 
     private int alienpos = 1; // initial position of the first alien
     private ArrayList<Alien> onScreen = new ArrayList<Alien>(); // arrayList of all aliens
@@ -86,6 +87,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
             numRows++;
             alienpos = 0;
         }
+        
 
 
     }
@@ -191,19 +193,16 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
 
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
             // player
-
-            //System.out.println(personXCoordinate);
             if (personXCoordinate < 600 - personSize) {
                 personXCoordinate += 10;
             }
 
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            //this.shootingLaser = true;
         	while (framesSinceFire > 20) {
         		lasers.add(new PlayerLaser(personXCoordinate+(this.personSize/2)-(this.laserSize/2), this.canvasHeight-this.personSize, this.laserSize, new Color(255,0,0)));
         		framesSinceFire = 0;
         	}
-        	
+        
         	
         }
     }
@@ -221,6 +220,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @returns  true if the player has lost, false otherwise
      */
     private boolean hasLostGame() {
+    	
         return false; // FIXME delete this when ready
     }
 
@@ -229,7 +229,9 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @returns  true if the player has won, false otherwise
      */
     private boolean hasWonGame() {
-
+    	if (this.onScreen.size() == 0) {
+    		return true;
+    	}
         return false; // FIXME delete this when ready
     }
 
@@ -239,21 +241,17 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      */
     private void paintGameScreen(Graphics g) {
         person1.draw(g);
-
-        // draw the laser
-//        if (shootingLaser) {
-//            this.laserSize = 10;
-//            PlayerLaser newLaser = new PlayerLaser(personXCoordinate, personYCoordinate, laserSize, new Color(255, 0, 0));
-//            //newLaser.speed_y += 5;
-//            newLaser.draw(g);
-
-            //newLaser.initiateLaserMovement();
-
-//        }
-
-        // alien
-
+        
         for(Alien a : onScreen) {
+        	
+        	Random rand = new Random();
+        	int firePrb =  rand.nextInt(1000);
+        	if (firePrb > 998) {
+        		this.alienLasers.add(new AlienLaser((int) a.x, (int) a.y, alienLaserSize, new Color(255,0,0)));
+        	}
+        	
+        	
+        	
             if (a.x >= (600-this.alienWidth)) {
                 speed = -5;
                 for(Alien b : onScreen) {
@@ -269,19 +267,32 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
                 }
             }
 
-            if (frame % 5 == 0) {
+            if (frame % 20 == 0) {
                 a.x += speed;
             }
 
             a.draw(g);
         }
+        
+
         for (PlayerLaser l : lasers) {
         	
         	l.y -= laserSpeed;
         	l.draw(g);
         }
+        
 
-
+        for (AlienLaser l : alienLasers) {
+        	
+        	l.y+= laserSpeed;
+        	l.draw(g);
+        	}
+        
+        if (frame % 20 == 0) {
+        	Random rand = new Random();
+        	int index = rand.nextInt(onScreen.size());
+        	onScreen.remove(index);
+        }
     }
 
     /* Paint the screen when the player has won
