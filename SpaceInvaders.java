@@ -1,6 +1,9 @@
 import java.util.ArrayList;
 import java.util.Random;
 
+// import math for hurtbox detection
+import java.lang.Math;
+
 // graphics
 import java.awt.Color;
 import java.awt.Dimension;
@@ -55,6 +58,13 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private int alienpos = 1; // initial position of the first alien
     private ArrayList<Alien> onScreen = new ArrayList<Alien>(); // arrayList of all aliens
     private int numRows = 0; // number of rows of all aliens - initialize at 0
+
+    private int alienXCoordinate = alienpos; // potential FIXME?
+    private int alienYCoordinate = alienHt; // again, for var name, potential FIXME?
+
+    // variables that deal with game ending
+    private boolean isGameLost = false;
+    private boolean isGameWon = false;
 
     // FIXME list your game objects here
 
@@ -226,8 +236,11 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @returns  true if the player has lost, false otherwise
      */
     private boolean hasLostGame() {
-
-        return false; // FIXME delete this when ready
+        // FIXME add other lose conditions - I have only added if the enemy laser hits the player
+        if (isGameLost) {
+            return true;
+        }
+        return false;
     }
 
     /* Check if the player has won the game
@@ -246,6 +259,10 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @param g The Graphics for the JPanel
      */
     private void paintGameScreen(Graphics g) {
+
+        // create margin of error for lasers hitting targets
+        int hurtboxMarginOfError = 5;
+
         person1.draw(g);
 
         for(Alien a : onScreen) {
@@ -258,7 +275,16 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
                 this.alienLasers.add(new AlienLaser((int) a.x, (int) a.y, alienLaserSize, new Color(255,0,0)));
             }
 
+            // if the player's laser touches the alien, remove it from the screen
+            // Exception in thread "AWT-EventQueue-0" java.util.ConcurrentModificationException occurs, but no actual error
+            for (Alien b : onScreen) {
+                for (PlayerLaser l : lasers) {
+                    if (Math.abs(b.x - l.x) < 15 && Math.abs(b.y - l.y) < 3) {
+                        onScreen.remove(b);
+                    }
+                }
 
+            }
 
             if (a.x >= (600-this.alienWidth)) {
                 speed = -5;
@@ -289,11 +315,19 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
             l.draw(g);
         }
 
-
         for (AlienLaser l : alienLasers) {
 
             l.y+= laserSpeed;
             l.draw(g);
+
+            // if an alien laser hits the player, the game is lost
+            if (Math.abs((l.x - personXCoordinate)) < 15) { // give some leeway for the laser to hit the player
+                if (Math.abs(l.y - personYCoordinate) < 3) { // however, y coordinates should be relatively close
+                    isGameLost = true;
+                }
+
+            }
+
         }
 
         if (frame % 20 == 0) {
