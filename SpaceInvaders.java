@@ -1,4 +1,3 @@
-
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -39,8 +38,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
 
     private int personSize = 20;
 
-    // laser boolean flag
-//    boolean shootingLaser = false;
+    // laser variables
     private ArrayList<PlayerLaser> lasers= new ArrayList<PlayerLaser>();
     private ArrayList<AlienLaser> alienLasers= new ArrayList<AlienLaser>();
     int laserSize = 6;
@@ -53,6 +51,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private int speed = 5; // alien speed
     private int alienLaserSize = 10;
 
+    // variables that put aliens on screen
     private int alienpos = 1; // initial position of the first alien
     private ArrayList<Alien> onScreen = new ArrayList<Alien>(); // arrayList of all aliens
     private int numRows = 0; // number of rows of all aliens - initialize at 0
@@ -78,6 +77,8 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         // instantiate the player
         this.person1 = new Person(personXCoordinate, personYCoordinate, personSize, new Color(0,255,0));
 
+        // while there aren't enough aliens drawn on the screen, add the remaining aliens
+        // if there are finally enough aliens (5 rows), then break from the while loop and continue
         while (numRows < 5) {
             while(alienpos + 15 <= canvasWidth-100) {
                 onScreen.add(new Alien(alienpos, alienHt, alienWidth, new Color(0,0,255)));
@@ -87,7 +88,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
             numRows++;
             alienpos = 0;
         }
-        
+
 
 
     }
@@ -185,25 +186,30 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @param e  An object describing what key was typed
      */
     public void keyPressed(KeyEvent e) {
+        // personXCoordinate is meant to be instantiated as person.X - this notation makes it more clear
+
+        // move left
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            if (personXCoordinate > 0) {
+            if (personXCoordinate > 0) { // does the player have space to move left?
                 personXCoordinate -= 10;
             }
 
 
-        } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            // player
-            if (personXCoordinate < 600 - personSize) {
+        }
+        // move right
+        else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            if (personXCoordinate < 600 - personSize) { // does the player have space to move right?
                 personXCoordinate += 10;
             }
 
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-        	while (framesSinceFire > 20) {
-        		lasers.add(new PlayerLaser(personXCoordinate+(this.personSize/2)-(this.laserSize/2), this.canvasHeight-this.personSize, this.laserSize, new Color(255,0,0)));
-        		framesSinceFire = 0;
-        	}
-        
-        	
+            // make sure that the player can't "spam" projectiles
+            while (framesSinceFire > 10) { // arbitrarily chosen amount of frames
+                lasers.add(new PlayerLaser(personXCoordinate+(this.personSize/2)-(this.laserSize/2), this.canvasHeight-this.personSize, this.laserSize, new Color(255,0,0)));
+                framesSinceFire = 0;
+            }
+
+
         }
     }
 
@@ -211,7 +217,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      */
     private void update() {
         this.person1 = new Person(personXCoordinate, personYCoordinate, personSize, new Color(0,255,0));
-        framesSinceFire++;
+        framesSinceFire++; // increase the frame counter
 
     }
 
@@ -220,7 +226,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @returns  true if the player has lost, false otherwise
      */
     private boolean hasLostGame() {
-    	
+
         return false; // FIXME delete this when ready
     }
 
@@ -229,9 +235,9 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @returns  true if the player has won, false otherwise
      */
     private boolean hasWonGame() {
-    	if (this.onScreen.size() == 0) {
-    		return true;
-    	}
+        if (this.onScreen.size() == 0) {
+            return true;
+        }
         return false; // FIXME delete this when ready
     }
 
@@ -241,17 +247,19 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      */
     private void paintGameScreen(Graphics g) {
         person1.draw(g);
-        
+
         for(Alien a : onScreen) {
-        	
-        	Random rand = new Random();
-        	int firePrb =  rand.nextInt(1000);
-        	if (firePrb > 998) {
-        		this.alienLasers.add(new AlienLaser((int) a.x, (int) a.y, alienLaserSize, new Color(255,0,0)));
-        	}
-        	
-        	
-        	
+
+            Random rand = new Random();
+            int firePrb =  rand.nextInt(1000);
+
+            // use a spontaneous probability (generated randomly) to add a new laser (extra challenge)
+            if (firePrb > 998) {
+                this.alienLasers.add(new AlienLaser((int) a.x, (int) a.y, alienLaserSize, new Color(255,0,0)));
+            }
+
+
+
             if (a.x >= (600-this.alienWidth)) {
                 speed = -5;
                 for(Alien b : onScreen) {
@@ -273,25 +281,27 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
 
             a.draw(g);
         }
-        
+
 
         for (PlayerLaser l : lasers) {
-        	
-        	l.y -= laserSpeed;
-        	l.draw(g);
+
+            l.y -= laserSpeed;
+            l.draw(g);
         }
-        
+
 
         for (AlienLaser l : alienLasers) {
-        	
-        	l.y+= laserSpeed;
-        	l.draw(g);
-        	}
-        
+
+            l.y+= laserSpeed;
+            l.draw(g);
+        }
+
         if (frame % 20 == 0) {
-        	Random rand = new Random();
-        	int index = rand.nextInt(onScreen.size());
-        	onScreen.remove(index);
+            Random rand = new Random();
+
+            // optional - uncomment if the aliens should randomly disappear
+            //int index = rand.nextInt(onScreen.size());
+            //onScreen.remove(index);
         }
     }
 
