@@ -1,3 +1,4 @@
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -45,8 +46,11 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private ArrayList<PlayerLaser> lasers= new ArrayList<PlayerLaser>();
     private ArrayList<AlienLaser> alienLasers= new ArrayList<AlienLaser>();
     int laserSize = 6;
-    int laserSpeed = 2;
+    int laserSpeed = 5;
     private int framesSinceFire = 0;
+    private ArrayList<PlayerLaser> deletedLasers = new ArrayList<PlayerLaser>();
+    private ArrayList<AlienLaser> deletedAlienLasers = new ArrayList<AlienLaser>();
+    
 
     // alien variables
     private int alienHt = 50;
@@ -58,6 +62,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private int alienpos = 1; // initial position of the first alien
     private ArrayList<Alien> onScreen = new ArrayList<Alien>(); // arrayList of all aliens
     private int numRows = 0; // number of rows of all aliens - initialize at 0
+    private ArrayList<Alien> deletedAliens = new ArrayList<Alien>();
 
     private int alienXCoordinate = alienpos; // potential FIXME?
     private int alienYCoordinate = alienHt; // again, for var name, potential FIXME?
@@ -65,6 +70,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     // variables that deal with game ending
     private boolean isGameLost = false;
     private boolean isGameWon = false;
+    
 
     // FIXME list your game objects here
 
@@ -259,12 +265,16 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @param g The Graphics for the JPanel
      */
     private void paintGameScreen(Graphics g) {
-
-        // create margin of error for lasers hitting targets
-        int hurtboxMarginOfError = 5;
-
         person1.draw(g);
-
+        for (Alien b : onScreen) {
+            for (PlayerLaser l : lasers) {
+                if (Math.abs(b.x - l.x) < 15 && Math.abs(b.y - l.y) < 3) {
+                	this.deletedAliens.add(b);
+                	this.deletedLasers.add(l);
+                }
+            }
+        
+        }
         for(Alien a : onScreen) {
 
             Random rand = new Random();
@@ -277,15 +287,9 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
 
             // if the player's laser touches the alien, remove it from the screen
             // Exception in thread "AWT-EventQueue-0" java.util.ConcurrentModificationException occurs, but no actual error
-            for (Alien b : onScreen) {
-                for (PlayerLaser l : lasers) {
-                    if (Math.abs(b.x - l.x) < 15 && Math.abs(b.y - l.y) < 3) {
-                        onScreen.remove(b);
-                    }
-                }
 
-            }
-
+            
+            
             if (a.x >= (600-this.alienWidth)) {
                 speed = -5;
                 for(Alien b : onScreen) {
@@ -313,12 +317,19 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
 
             l.y -= laserSpeed;
             l.draw(g);
+            if (l.y < 0) {
+            	deletedLasers.add(l);
+            }
         }
 
         for (AlienLaser l : alienLasers) {
 
             l.y+= laserSpeed;
             l.draw(g);
+            if(l.y > this.canvasHeight) {
+            	deletedAlienLasers.add(l);
+            	
+            }
 
             // if an alien laser hits the player, the game is lost
             if (Math.abs((l.x - personXCoordinate)) < 15) { // give some leeway for the laser to hit the player
@@ -329,14 +340,20 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
             }
 
         }
-
-        if (frame % 20 == 0) {
-            Random rand = new Random();
-
-            // optional - uncomment if the aliens should randomly disappear
-            //int index = rand.nextInt(onScreen.size());
-            //onScreen.remove(index);
+        
+        for(Alien index : deletedAliens) {
+        	onScreen.remove(index);
         }
+        
+        for(PlayerLaser index : deletedLasers) {
+        	this.lasers.remove(index);
+        }
+        for(AlienLaser index : deletedAlienLasers) {
+        	this.alienLasers.remove(index);
+        }
+        deletedAlienLasers.clear();
+        deletedAliens.clear();
+        deletedLasers.clear();
     }
 
     /* Paint the screen when the player has won
@@ -366,3 +383,4 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         EventQueue.invokeLater(invaders);
     }
 }
+
