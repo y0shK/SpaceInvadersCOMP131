@@ -40,19 +40,24 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private int personYCoordinate; // this.canvasHeight - 20;
     private int personSize = 20; // size of player sprite
 
-    // laser variables
-    private ArrayList<PlayerLaser> lasers= new ArrayList<PlayerLaser>();
-    private ArrayList<AlienLaser> alienLasers= new ArrayList<AlienLaser>();
-    int laserSize = 6;
-    int laserSpeed = 5;
-    private int framesSinceFire = 0;
+    // player laser variables
+    private ArrayList<PlayerLaser> lasers= new ArrayList<PlayerLaser>(); // store all player lasers on screen
+    private ArrayList<AlienLaser> alienLasers= new ArrayList<AlienLaser>(); // store all enemy lasers on screen
+
+    int laserSize = 6; // player laser size
+    int laserSpeed = 5; // player laser speed
+
+    // can't move until after a certain amount of frames elapse after firing a laser
+    private int framesSinceFire = 0; // will be initialized after th laser is fired
+
+    // store deleted lasers to safely remove them from the screen
     private ArrayList<PlayerLaser> deletedLasers = new ArrayList<PlayerLaser>();
     private ArrayList<AlienLaser> deletedAlienLasers = new ArrayList<AlienLaser>();
 
 
     // alien variables
-    private int alienHt = 50;
-    private int alienWidth = 15;
+    private int alienHt = 50; // alien height
+    private int alienWidth = 15; // alien width
     private int speed = 5; // alien speed
     private int alienLaserSize = 10;
 
@@ -60,14 +65,13 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private int alienpos = 1; // initial position of the first alien
     private ArrayList<Alien> onScreen = new ArrayList<Alien>(); // arrayList of all aliens
     private int numRows = 0; // number of rows of all aliens - initialize at 0
+
+    // same concept as alien lasers
     private ArrayList<Alien> deletedAliens = new ArrayList<Alien>();
 
-    private int alienXCoordinate = alienpos;
-    private int alienYCoordinate = alienHt;
-
     // variables that deal with game ending
-    private boolean isGameLost = false;
-    private boolean isGameWon = false;
+    private boolean isGameLost = false; // game lost
+    // game won when enemy list size is 0 - no need to keep track with a flag
 
     /* Constructor for a Space Invaders game
      */
@@ -91,10 +95,11 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         // while there aren't enough aliens drawn on the screen, add the remaining aliens
         // if there are finally enough aliens (5 rows), then break from the while loop and continue
         while (numRows < 5) {
-            while(alienpos + 15 <= canvasWidth-100) {
+            while(alienpos + 15 <= canvasWidth - 100) {
                 onScreen.add(new Alien(alienpos, alienHt, alienWidth, new Color(0,0,255)));
-                alienpos+=30;
+                alienpos += 30;
             }
+            // move the aliens up while a new row is created below - reinitialize the position
             alienHt+=25;
             numRows++;
             alienpos = 0;
@@ -197,12 +202,11 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @param e  An object describing what key was typed
      */
     public void keyPressed(KeyEvent e) {
-        // personXCoordinate is meant to be instantiated as person.X - this notation makes it more clear
 
         // move left
         if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             if (personXCoordinate > 0) { // does the player have space to move left?
-                personXCoordinate -= 10;
+                personXCoordinate -= 10; // subtract the x coordinate to move left
             }
 
 
@@ -210,14 +214,18 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         // move right
         else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
             if (personXCoordinate < 600 - personSize) { // does the player have space to move right?
-                personXCoordinate += 10;
+                personXCoordinate += 10; // add to the x coordinate to move right
             }
 
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            // make sure that the player can't "spam" projectiles
+            // make sure that the player can't "spam" projectiles - once one is fired,
+                // there's a brief period that restricts movement and refiring
             while (framesSinceFire > 10) { // arbitrarily chosen amount of frames
-                lasers.add(new PlayerLaser(personXCoordinate+(this.personSize/2)-(this.laserSize/2), this.canvasHeight-this.personSize, this.laserSize, new Color(255,0,0)));
-                framesSinceFire = 0;
+                lasers.add(new PlayerLaser(personXCoordinate+(this.personSize/2)-(this.laserSize/2),
+                        this.canvasHeight-this.personSize,
+                        this.laserSize,
+                        new Color(255,0,0)));
+                framesSinceFire = 0; // reset the restriction period once it's over
             }
 
 
@@ -237,10 +245,11 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @returns  true if the player has lost, false otherwise
      */
     private boolean hasLostGame() {
+        // this flag can trigger in 3 ways; player hit with alien projectile, hit with alien, or aliens get past player
         if (isGameLost) {
             return true;
         }
-        return false;
+        return false; // else
     }
 
     /* Check if the player has won the game
@@ -251,7 +260,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         if (this.onScreen.size() == 0) { // if alien arrayList size is 0 - i.e. there are no more aliens
             return true;
         }
-        return false;
+        return false; // else
     }
 
     /* Paint the screen during normal gameplay
@@ -260,15 +269,18 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      */
     private void paintGameScreen(Graphics g) {
         person1.draw(g);
+
         for (Alien b : onScreen) {
             for (PlayerLaser l : lasers) {
-                if (Math.abs(b.x - l.x) < 15 && Math.abs(b.y - l.y) < 3) {
+                if (Math.abs(b.x - l.x) < 15 && Math.abs(b.y - l.y) < 3) { // if any player laser touches any alien
+                    // then keep track of which aliens to remove and which lasers need to exit the screen
                     this.deletedAliens.add(b);
                     this.deletedLasers.add(l);
                 }
             }
 
-            // if the alien touches the player, the game lost
+            // if the alien touches the player, the game is lost
+            // contact is defined by abs(alien.x or y - person.x or y) is less than an arbitrary threshold
             if (Math.abs(b.x - personXCoordinate) < 15) {
                 if (Math.abs(b.y - personYCoordinate) < 3) {
                     isGameLost = true;
@@ -281,28 +293,25 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
             }
 
         }
+
         for(Alien a : onScreen) {
 
             Random rand = new Random();
             int firePrb =  rand.nextInt(1000);
 
-            // use a spontaneous probability (generated randomly) to add a new laser (extra challenge)
-            if (firePrb > 998) {
+            // use a spontaneous probability (generated randomly) to add a new laser
+            if (firePrb > 998) { // fire probability per frame
                 this.alienLasers.add(new AlienLaser((int) a.x, (int) a.y, alienLaserSize, new Color(255,0,0)));
             }
 
-            // if the player's laser touches the alien, remove it from the screen
-            // Exception in thread "AWT-EventQueue-0" java.util.ConcurrentModificationException occurs, but no actual error
-
-
-
-            if (a.x >= (600-this.alienWidth)) {
-                speed = -5;
-                for(Alien b : onScreen) {
+            if (a.x >= (600-this.alienWidth)) { // if the aliens are going to exit the screen to the right
+                speed = -5; // reverse the velocity
+                for(Alien b : onScreen) { // keep the aliens going down the screen and switching direction
                     b.y +=5;
                     b.x-=5;
                 }
             }
+            // same process, in reverse
             else if (a.x <= 0){
                 speed = 5;
                 for(Alien b : onScreen) {
@@ -311,6 +320,8 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
                 }
             }
 
+            // increase horizontal movement every 20 frames
+            // makes it harder for the player after a certain amount of time
             if (frame % 20 == 0) {
                 a.x += speed;
             }
@@ -321,18 +332,18 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
 
         for (PlayerLaser l : lasers) {
 
-            l.y -= laserSpeed;
-            l.draw(g);
-            if (l.y < 0) {
+            l.y -= laserSpeed; // every frame, move the laser up by the laser speed
+            l.draw(g); // redraw the laser
+            if (l.y < 0) { // if the laser exits the screen, remove it
                 deletedLasers.add(l);
             }
         }
 
         for (AlienLaser l : alienLasers) {
 
-            l.y+= laserSpeed;
+            l.y+= laserSpeed; // every frame, move the laser down by the laser speed
             l.draw(g);
-            if(l.y > this.canvasHeight) {
+            if(l.y > this.canvasHeight) { // if the laser exits the screen, remove it
                 deletedAlienLasers.add(l);
 
             }
@@ -347,6 +358,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
 
         }
 
+        // remove all aliens to be deleted
         for(Alien index : deletedAliens) {
             onScreen.remove(index);
         }
@@ -357,6 +369,8 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         for(AlienLaser index : deletedAlienLasers) {
             this.alienLasers.remove(index);
         }
+
+        // clear previous values before adding them again - makes sure gameplay works as expected
         deletedAlienLasers.clear();
         deletedAliens.clear();
         deletedLasers.clear();
