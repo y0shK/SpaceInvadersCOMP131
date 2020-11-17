@@ -1,5 +1,8 @@
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.ArrayList; // arrayList to contain objects
+import java.util.Random; // randomly fired enemy projectiles
+
+// import math for hurtbox detection
+import java.lang.Math;
 
 // graphics
 import java.awt.Color;
@@ -32,18 +35,20 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private int frame = 0;
 
     // player variables
-    private Person person1; // player
+    private Person person1; // player instance
     private int personXCoordinate; // 0
     private int personYCoordinate; // this.canvasHeight - 20;
-
-    private int personSize = 20;
+    private int personSize = 20; // size of player sprite
 
     // laser variables
     private ArrayList<PlayerLaser> lasers= new ArrayList<PlayerLaser>();
     private ArrayList<AlienLaser> alienLasers= new ArrayList<AlienLaser>();
     int laserSize = 6;
-    int laserSpeed = 2;
+    int laserSpeed = 5;
     private int framesSinceFire = 0;
+    private ArrayList<PlayerLaser> deletedLasers = new ArrayList<PlayerLaser>();
+    private ArrayList<AlienLaser> deletedAlienLasers = new ArrayList<AlienLaser>();
+
 
     // alien variables
     private int alienHt = 50;
@@ -55,8 +60,14 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private int alienpos = 1; // initial position of the first alien
     private ArrayList<Alien> onScreen = new ArrayList<Alien>(); // arrayList of all aliens
     private int numRows = 0; // number of rows of all aliens - initialize at 0
+    private ArrayList<Alien> deletedAliens = new ArrayList<Alien>();
 
-    // FIXME list your game objects here
+    private int alienXCoordinate = alienpos;
+    private int alienYCoordinate = alienHt;
+
+    // variables that deal with game ending
+    private boolean isGameLost = false;
+    private boolean isGameWon = false;
 
     /* Constructor for a Space Invaders game
      */
@@ -226,8 +237,10 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @returns  true if the player has lost, false otherwise
      */
     private boolean hasLostGame() {
-
-        return false; // FIXME delete this when ready
+        if (isGameLost) {
+            return true;
+        }
+        return false;
     }
 
     /* Check if the player has won the game
@@ -235,10 +248,10 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @returns  true if the player has won, false otherwise
      */
     private boolean hasWonGame() {
-        if (this.onScreen.size() == 0) {
+        if (this.onScreen.size() == 0) { // if alien arrayList size is 0 - i.e. there are no more aliens
             return true;
         }
-        return false; // FIXME delete this when ready
+        return false;
     }
 
     /* Paint the screen during normal gameplay
@@ -247,7 +260,27 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      */
     private void paintGameScreen(Graphics g) {
         person1.draw(g);
+        for (Alien b : onScreen) {
+            for (PlayerLaser l : lasers) {
+                if (Math.abs(b.x - l.x) < 15 && Math.abs(b.y - l.y) < 3) {
+                    this.deletedAliens.add(b);
+                    this.deletedLasers.add(l);
+                }
+            }
 
+            // if the alien touches the player, the game lost
+            if (Math.abs(b.x - personXCoordinate) < 15) {
+                if (Math.abs(b.y - personYCoordinate) < 3) {
+                    isGameLost = true;
+                }
+            }
+
+            // if the alien exits the screen below the player, the game lost
+            if (b.y >= canvasHeight) {
+                isGameLost = true;
+            }
+
+        }
         for(Alien a : onScreen) {
 
             Random rand = new Random();
@@ -257,6 +290,9 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
             if (firePrb > 998) {
                 this.alienLasers.add(new AlienLaser((int) a.x, (int) a.y, alienLaserSize, new Color(255,0,0)));
             }
+
+            // if the player's laser touches the alien, remove it from the screen
+            // Exception in thread "AWT-EventQueue-0" java.util.ConcurrentModificationException occurs, but no actual error
 
 
 
@@ -287,22 +323,43 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
 
             l.y -= laserSpeed;
             l.draw(g);
+            if (l.y < 0) {
+                deletedLasers.add(l);
+            }
         }
-
 
         for (AlienLaser l : alienLasers) {
 
             l.y+= laserSpeed;
             l.draw(g);
+            if(l.y > this.canvasHeight) {
+                deletedAlienLasers.add(l);
+
+            }
+
+            // if an alien laser hits the player, the game is lost
+            if (Math.abs((l.x - personXCoordinate)) < 15) { // give some leeway for the laser to hit the player
+                if (Math.abs(l.y - personYCoordinate) < 3) { // however, y coordinates should be relatively close
+                    isGameLost = true;
+                }
+
+            }
+
         }
 
-        if (frame % 20 == 0) {
-            Random rand = new Random();
-
-            // optional - uncomment if the aliens should randomly disappear
-            //int index = rand.nextInt(onScreen.size());
-            //onScreen.remove(index);
+        for(Alien index : deletedAliens) {
+            onScreen.remove(index);
         }
+
+        for(PlayerLaser index : deletedLasers) {
+            this.lasers.remove(index);
+        }
+        for(AlienLaser index : deletedAlienLasers) {
+            this.alienLasers.remove(index);
+        }
+        deletedAlienLasers.clear();
+        deletedAliens.clear();
+        deletedLasers.clear();
     }
 
     /* Paint the screen when the player has won
@@ -332,3 +389,4 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         EventQueue.invokeLater(invaders);
     }
 }
+
