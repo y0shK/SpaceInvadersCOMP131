@@ -1,5 +1,14 @@
+<<<<<<< HEAD
 import java.util.ArrayList; // arrayList to contain objects
 import java.util.Random; // randomly fired enemy projectiles
+
+// import math for hurtbox detection
+import java.lang.Math;
+=======
+
+import java.util.ArrayList;
+import java.util.Random;
+>>>>>>> main
 
 // import math for hurtbox detection
 import java.lang.Math;
@@ -48,7 +57,11 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private int framesSinceFire = 0;
     private ArrayList<PlayerLaser> deletedLasers = new ArrayList<PlayerLaser>();
     private ArrayList<AlienLaser> deletedAlienLasers = new ArrayList<AlienLaser>();
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> main
 
     // alien variables
     private int alienHt = 50;
@@ -62,8 +75,18 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     private int numRows = 0; // number of rows of all aliens - initialize at 0
     private ArrayList<Alien> deletedAliens = new ArrayList<Alien>();
 
+<<<<<<< HEAD
     private int alienXCoordinate = alienpos;
     private int alienYCoordinate = alienHt;
+=======
+    private int alienXCoordinate = alienpos; // potential FIXME?
+    private int alienYCoordinate = alienHt; // again, for var name, potential FIXME?
+
+    // variables that deal with game ending
+    private boolean isGameLost = false;
+    private boolean isGameWon = false;
+    
+>>>>>>> main
 
     // variables that deal with game ending
     private boolean isGameLost = false;
@@ -237,6 +260,10 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
      * @returns  true if the player has lost, false otherwise
      */
     private boolean hasLostGame() {
+<<<<<<< HEAD
+=======
+        // FIXME add other lose conditions - I have only added if the enemy laser hits the player
+>>>>>>> main
         if (isGameLost) {
             return true;
         }
@@ -263,6 +290,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         for (Alien b : onScreen) {
             for (PlayerLaser l : lasers) {
                 if (Math.abs(b.x - l.x) < 15 && Math.abs(b.y - l.y) < 3) {
+<<<<<<< HEAD
                     this.deletedAliens.add(b);
                     this.deletedLasers.add(l);
                 }
@@ -280,6 +308,13 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
                 isGameLost = true;
             }
 
+=======
+                	this.deletedAliens.add(b);
+                	this.deletedLasers.add(l);
+                }
+            }
+        
+>>>>>>> main
         }
         for(Alien a : onScreen) {
 
@@ -293,9 +328,13 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
 
             // if the player's laser touches the alien, remove it from the screen
             // Exception in thread "AWT-EventQueue-0" java.util.ConcurrentModificationException occurs, but no actual error
+<<<<<<< HEAD
 
+=======
+>>>>>>> main
 
-
+            
+            
             if (a.x >= (600-this.alienWidth)) {
                 speed = -5;
                 for(Alien b : onScreen) {
@@ -324,7 +363,11 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
             l.y -= laserSpeed;
             l.draw(g);
             if (l.y < 0) {
+<<<<<<< HEAD
                 deletedLasers.add(l);
+=======
+            	deletedLasers.add(l);
+>>>>>>> main
             }
         }
 
@@ -333,6 +376,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
             l.y+= laserSpeed;
             l.draw(g);
             if(l.y > this.canvasHeight) {
+<<<<<<< HEAD
                 deletedAlienLasers.add(l);
 
             }
@@ -357,6 +401,32 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         for(AlienLaser index : deletedAlienLasers) {
             this.alienLasers.remove(index);
         }
+=======
+            	deletedAlienLasers.add(l);
+            	
+            }
+
+            // if an alien laser hits the player, the game is lost
+            if (Math.abs((l.x - personXCoordinate)) < 15) { // give some leeway for the laser to hit the player
+                if (Math.abs(l.y - personYCoordinate) < 3) { // however, y coordinates should be relatively close
+                    isGameLost = true;
+                }
+
+            }
+
+        }
+        
+        for(Alien index : deletedAliens) {
+        	onScreen.remove(index);
+        }
+        
+        for(PlayerLaser index : deletedLasers) {
+        	this.lasers.remove(index);
+        }
+        for(AlienLaser index : deletedAlienLasers) {
+        	this.alienLasers.remove(index);
+        }
+>>>>>>> main
         deletedAlienLasers.clear();
         deletedAliens.clear();
         deletedLasers.clear();
